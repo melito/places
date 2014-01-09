@@ -43,6 +43,14 @@ func (c *PlacesClient) Nearby(lat float64, lng float64, radius int, types ...str
 	return c.nearBy(params)
 }
 
+func (c *PlacesClient) NearbyWithToken(token string) (interface{}, error) {
+
+	params := make(map[string]string)
+	params["pagetoken"] = token
+
+	return c.nearBy(params)
+}
+
 func (c *PlacesClient) nearBy(params map[string]string) (interface{}, error) {
 	return c.dispatchRequest("nearbysearch", params)
 }
@@ -52,8 +60,8 @@ func (c *PlacesClient) dispatchRequest(reqEndPoint string, params map[string]str
 	reqUrl := strings.Join([]string{c.apiEndPoint, reqEndPoint, "json"}, "/")
 
 	values := url.Values{}
-	values.Set("key", c.apiKey)
 	values.Set("sensor", "true")
+	values.Set("key", c.apiKey)
 
 	for k, v := range params {
 		values.Set(k, v)

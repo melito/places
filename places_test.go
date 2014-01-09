@@ -33,4 +33,14 @@ func TestNearbySearch(t *testing.T) {
 		t.Fatal("Results were nil")
 	}
 
+	status := results.(map[string]interface{})["status"]
+	if status != "OK" {
+		t.Fatal("Request failed.  Got status:", status)
+	}
+
+	places := results.(map[string]interface{})["results"]
+	if len(places.([]interface{})) == 0 {
+		t.Fatal("Didn't get any places:", places)
+	}
+
 }

@@ -26,16 +26,13 @@ func NewPlacesClient(apiKey string) *PlacesClient {
 	}
 }
 
-func (c *PlacesClient) Nearby(lat float64, lng float64, radius int, types ...string) (interface{}, error) {
+func (c *PlacesClient) Nearby(lat float64, lng float64, types ...string) (interface{}, error) {
 
 	latStr := fmt.Sprintf("%.6f", lat)
 	lngStr := fmt.Sprintf("%.6f", lng)
 
 	params := make(map[string]string)
 	params["location"] = strings.Join([]string{latStr, lngStr}, ",")
-
-	params["radius"] = strconv.Itoa(radius)
-
 	params["rankby"] = "distance"
 
 	if len(types) > 0 {

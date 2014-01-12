@@ -25,7 +25,7 @@ func TestNearbySearch(t *testing.T) {
 	client := NewPlacesClient(os.Getenv("PLACES_API_KEY"))
 	latitude, longitude := 30.0279, -98.1179
 
-	results, err := client.Nearby(latitude, longitude, 5000, "food", "cafe")
+	results, err := client.Nearby(latitude, longitude, "food", "cafe")
 	if err != nil {
 		t.Fatal("Error returned:", err)
 	}
@@ -51,7 +51,7 @@ func TestNearbySearchPagination(t *testing.T) {
 	client := NewPlacesClient(os.Getenv("PLACES_API_KEY"))
 	latitude, longitude := 30.0279, -98.1179
 
-	results, err := client.Nearby(latitude, longitude, 5000, "food", "cafe")
+	results, err := client.Nearby(latitude, longitude, "food", "cafe")
 	if err != nil {
 		t.Fatal("Error returned:", err)
 	}

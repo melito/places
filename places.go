@@ -36,11 +36,32 @@ func (c *PlacesClient) Nearby(lat float64, lng float64, radius int, types ...str
 
 	params["radius"] = strconv.Itoa(radius)
 
+	params["rankby"] = "distance"
+
 	if len(types) > 0 {
 		params["types"] = strings.Join(types, "|")
 	}
 
 	return c.nearBy(params)
+}
+
+func (c *PlacesClient) PopularNearby(lat float64, lng float64, radius int, types ...string) (interface{}, error) {
+	latStr := fmt.Sprintf("%.6f", lat)
+	lngStr := fmt.Sprintf("%.6f", lng)
+
+	params := make(map[string]string)
+	params["location"] = strings.Join([]string{latStr, lngStr}, ",")
+
+	params["radius"] = strconv.Itoa(radius)
+
+	params["rankby"] = "prominence"
+
+	if len(types) > 0 {
+		params["types"] = strings.Join(types, "|")
+	}
+
+	return c.nearBy(params)
+
 }
 
 func (c *PlacesClient) NearbyWithToken(token string) (interface{}, error) {

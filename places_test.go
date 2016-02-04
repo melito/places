@@ -1,10 +1,17 @@
 package places
 
 import (
+	"encoding/json"
 	"os"
 	"testing"
 	"time"
 )
+
+func structureResult(data []byte) (result *Result) {
+	var jsonObj Result
+	json.Unmarshal(data, &jsonObj)
+	return &jsonObj
+}
 
 func TestClientCreation(t *testing.T) {
 
@@ -34,14 +41,13 @@ func TestNearbySearch(t *testing.T) {
 		t.Fatal("Results were nil")
 	}
 
-	status := results.(map[string]interface{})["status"]
-	if status != "OK" {
-		t.Fatal("Request failed.  Got status:", status)
+	result := structureResult(results)
+	if result.Status != "OK" {
+		t.Fatal("Request failed.  Got status:", result.Status)
 	}
 
-	places := results.(map[string]interface{})["results"]
-	if len(places.([]interface{})) == 0 {
-		t.Fatal("Didn't get any places:", places)
+	if len(result.Locations) == 0 {
+		t.Fatal("Didn't get any places:", result.Locations)
 	}
 
 }
@@ -56,8 +62,9 @@ func TestNearbySearchPagination(t *testing.T) {
 		t.Fatal("Error returned:", err)
 	}
 
-	token := results.(map[string]interface{})["next_page_token"]
-	if token == "" {
+	result := structureResult(results)
+
+	if result.NextToken == "" {
 		t.Fatal("We didn't get a next page token")
 	}
 
@@ -66,7 +73,7 @@ func TestNearbySearchPagination(t *testing.T) {
 	// The problem is that that token isn't valid until some time has elapsed.
 	time.Sleep(1200 * time.Millisecond)
 
-	nextResults, err := client.NearbyWithToken(token.(string))
+	nextResults, err := client.NearbyWithToken(result.NextToken)
 	if err != nil {
 		t.Fatal("Error returned:", err)
 	}
@@ -75,14 +82,16 @@ func TestNearbySearchPagination(t *testing.T) {
 		t.Fatal("nextResults was nil")
 	}
 
-	status := nextResults.(map[string]interface{})["status"]
-	if status != "OK" {
-		t.Fatal("Request failed.  Got status:", status)
+	nextResult := structureResult(nextResults)
+
+	t.Log(nextResult)
+
+	if nextResult.Status != "OK" {
+		t.Fatal("Request failed.  Got status:", nextResult.Status)
 	}
 
-	places := nextResults.(map[string]interface{})["results"]
-	if len(places.([]interface{})) == 0 {
-		t.Fatal("Didn't get any places:", places)
+	if len(nextResult.Locations) == 0 {
+		t.Fatal("Didn't get any places:", nextResult.Locations)
 	}
 
 }

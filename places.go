@@ -1,7 +1,6 @@
 package places
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -16,6 +15,29 @@ type PlacesClient struct {
 	apiEndPoint string
 }
 
+type Result struct {
+	NextToken string     `json:"next_page_token"`
+	Locations []Location `json:"results"`
+	Status    string     `json:"status"`
+}
+
+type Location struct {
+	Id       string `json:"id"`
+	Name     string `json:"name"`
+	Vicinity string `json:"vicinity"`
+
+	Hours struct {
+		OpenNow bool `json:"open_now"`
+	} `json:"opening_hours"`
+
+	Geometry struct {
+		Location struct {
+			Latitude  float64 `json:"lat"`
+			Longitude float64 `json:"lng"`
+		}
+	} `json:"geometry"`
+}
+
 const DefaultApiEndpoint = "https://maps.googleapis.com/maps/api/place"
 
 func NewPlacesClient(apiKey string) *PlacesClient {
@@ -26,7 +48,7 @@ func NewPlacesClient(apiKey string) *PlacesClient {
 	}
 }
 
-func (c *PlacesClient) Nearby(lat float64, lng float64, types ...string) (interface{}, error) {
+func (c *PlacesClient) Nearby(lat float64, lng float64, types ...string) ([]byte, error) {
 
 	latStr := fmt.Sprintf("%.6f", lat)
 	lngStr := fmt.Sprintf("%.6f", lng)
@@ -42,7 +64,7 @@ func (c *PlacesClient) Nearby(lat float64, lng float64, types ...string) (interf
 	return c.nearBy(params)
 }
 
-func (c *PlacesClient) PopularNearby(lat float64, lng float64, radius int, types ...string) (interface{}, error) {
+func (c *PlacesClient) PopularNearby(lat float64, lng float64, radius int, types ...string) ([]byte, error) {
 	latStr := fmt.Sprintf("%.6f", lat)
 	lngStr := fmt.Sprintf("%.6f", lng)
 
@@ -61,7 +83,7 @@ func (c *PlacesClient) PopularNearby(lat float64, lng float64, radius int, types
 
 }
 
-func (c *PlacesClient) NearbyWithToken(token string) (interface{}, error) {
+func (c *PlacesClient) NearbyWithToken(token string) ([]byte, error) {
 
 	params := make(map[string]string)
 	params["pagetoken"] = token
@@ -69,11 +91,11 @@ func (c *PlacesClient) NearbyWithToken(token string) (interface{}, error) {
 	return c.nearBy(params)
 }
 
-func (c *PlacesClient) nearBy(params map[string]string) (interface{}, error) {
+func (c *PlacesClient) nearBy(params map[string]string) ([]byte, error) {
 	return c.dispatchRequest("nearbysearch", params)
 }
 
-func (c *PlacesClient) dispatchRequest(reqEndPoint string, params map[string]string) (interface{}, error) {
+func (c *PlacesClient) dispatchRequest(reqEndPoint string, params map[string]string) ([]byte, error) {
 
 	reqUrl := strings.Join([]string{c.apiEndPoint, reqEndPoint, "json"}, "/")
 
@@ -92,9 +114,7 @@ func (c *PlacesClient) dispatchRequest(reqEndPoint string, params map[string]str
 	body, _ := ioutil.ReadAll(req.Body)
 
 	if req.StatusCode >= 200 && req.StatusCode <= 400 && err == nil {
-		var jsonResult interface{}
-		json.Unmarshal(body, &jsonResult)
-		return jsonResult, nil
+		return body, nil
 	} else {
 		return nil, fmt.Errorf("Code:%d error:%v body:%s", req.StatusCode, err, body)
 	}

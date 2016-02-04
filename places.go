@@ -95,6 +95,24 @@ func (c *PlacesClient) nearBy(params map[string]string) ([]byte, error) {
 	return c.dispatchRequest("nearbysearch", params)
 }
 
+func (c *PlacesClient) NearbyWithKeyword(search string, lat float64, lng float64, types ...string) ([]byte, error) {
+
+	params := make(map[string]string)
+	params["keyword"] = search
+
+	latStr := fmt.Sprintf("%.6f", lat)
+	lngStr := fmt.Sprintf("%.6f", lng)
+	params["location"] = strings.Join([]string{latStr, lngStr}, ",")
+
+	if len(types) > 0 {
+		params["types"] = strings.Join(types, "|")
+	}
+
+	params["rankby"] = "distance"
+
+	return c.dispatchRequest("nearbysearch", params)
+}
+
 func (c *PlacesClient) dispatchRequest(reqEndPoint string, params map[string]string) ([]byte, error) {
 
 	reqUrl := strings.Join([]string{c.apiEndPoint, reqEndPoint, "json"}, "/")

@@ -71,7 +71,7 @@ func TestNearbySearchPagination(t *testing.T) {
 	// There is an issue with the page token approach
 	// When Google issues you a set of results they provide a token to access the next page.
 	// The problem is that that token isn't valid until some time has elapsed.
-	time.Sleep(1200 * time.Millisecond)
+	time.Sleep(2000 * time.Millisecond)
 
 	nextResults, err := client.NearbyWithToken(result.NextToken)
 	if err != nil {
@@ -92,6 +92,29 @@ func TestNearbySearchPagination(t *testing.T) {
 
 	if len(nextResult.Locations) == 0 {
 		t.Fatal("Didn't get any places:", nextResult.Locations)
+	}
+
+}
+
+func TestNearbyWithKeyword(t *testing.T) {
+
+	client := NewPlacesClient(os.Getenv("PLACES_API_KEY"))
+	results, err := client.NearbyWithKeyword("Jobell", 30.0279, -98.1179, "food", "cafe")
+	if err != nil {
+		t.Fatalf("Error fetching results", err)
+	}
+
+	result := structureResult(results)
+	if result == nil {
+		t.Fatal("Result was nil")
+	}
+
+	if len(result.Locations) != 1 {
+		t.Fatalf("Got wrong number of results", len(result.Locations))
+	}
+
+	if result.Locations[0].Name != "Jobell Cafe & Bistro" {
+		t.Fatalf("Didn't get location we were expecting", result.Locations[0].Name)
 	}
 
 }
